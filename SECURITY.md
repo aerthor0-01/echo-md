@@ -3,7 +3,7 @@
 Report vulnerabilities privately to **vault@echostate.cloud**. Please don't open public issues for them.
 
 Defaults: no network access; tracked roots and exclusions are explicit; `.env`, keys and credential-like names are
-excluded; symlinks are not followed; restore only writes into an empty folder outside the workspace and checks every
+excluded; symlinks are not followed; restore refuses any destination inside the workspace, only writes into an empty folder and checks every
 written byte; historical contents are shown as data and never executed.
 
 Local history keeps old file contents. If a secret was captured, rotate it, then delete the affected `.echo/objects`

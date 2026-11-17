@@ -18,7 +18,7 @@ export const DEFAULT_CONFIG = {
 };
 export type Config = typeof DEFAULT_CONFIG;
 const HERMES_INCLUDE = ["MEMORY.md", "USER.md", "SOUL.md", "AGENTS.md", "memories/**", "skills/**"];
-const SECRET_PATTERNS = [/sk-[A-Za-z0-9_-]{20,}/, /gh[pousr]_[A-Za-z0-9]{30,}/, /AKIA[0-9A-Z]{16}/, /xox[baprs]-[A-Za-z0-9-]{10,}/, /-----BEGIN [A-Z ]*PRIVATE KEY-----/];
+const SECRET_PATTERNS = [/sk-[A-Za-z0-9_-]{20,}/, /gh[pousr]_[A-Za-z0-9]{30,}/, /AKIA[0-9A-Z]{16}/, /xox[baprs]-[A-Za-z0-9-]{10,}/, /-----BEGIN [A-Z ]*PRIVATE KEY-----/, /[sr]k_(?:live|test)_[A-Za-z0-9]{16,}/, /github_pat_[A-Za-z0-9_]{40,}/, /AIza[0-9A-Za-z_-]{35}/, /eyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/];
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS captures (version INTEGER PRIMARY KEY, captured_at TEXT NOT NULL, label TEXT NOT NULL DEFAULT '', manifest_digest TEXT NOT NULL, file_count INTEGER NOT NULL, total_bytes INTEGER NOT NULL, consistent INTEGER NOT NULL DEFAULT 1, runtime TEXT NOT NULL);
@@ -193,7 +193,7 @@ export class Workspace {
   restore(version: number, destIn: string): string[] {
     const dest = path.resolve(destIn);
     if (fs.existsSync(dest) && fs.readdirSync(dest).length) throw new EchoError(`destination is not empty: ${dest}`);
-    if (dest === this.root || within(dest, this.dir)) throw new EchoError("refusing to restore over the workspace; choose a new folder");
+    if (within(dest, path.resolve(this.root))) throw new EchoError("restore destination must be outside the workspace (try --to ../restored)");
     const files = this.files(version);
     for (const f of files) {
       const t = path.resolve(dest, safeRel(f.path));

@@ -30,6 +30,10 @@ SECRET_PATTERNS = [
     re.compile(rb"AKIA[0-9A-Z]{16}"),
     re.compile(rb"xox[baprs]-[A-Za-z0-9-]{10,}"),
     re.compile(rb"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
+    re.compile(rb"[sr]k_(?:live|test)_[A-Za-z0-9]{16,}"),
+    re.compile(rb"github_pat_[A-Za-z0-9_]{40,}"),
+    re.compile(rb"AIza[0-9A-Za-z_-]{35}"),
+    re.compile(rb"eyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}"),
 ]
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -300,8 +304,8 @@ class Workspace:
         dest = dest.resolve()
         if dest.exists() and any(dest.iterdir()):
             raise EchoError(f"destination is not empty: {dest}")
-        if dest == self.root or dest.is_relative_to(self.dir):
-            raise EchoError("refusing to restore over the workspace; choose a new folder")
+        if dest.is_relative_to(self.root.resolve()):
+            raise EchoError("restore destination must be outside the workspace (try --to ../restored)")
         files = self.files(version)
         for f in files:
             target = (dest / safe_rel(f.path)).resolve()

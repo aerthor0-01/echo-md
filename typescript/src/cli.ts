@@ -4,7 +4,7 @@ import * as path from "node:path";
 import { parseArgs } from "node:util";
 import { EchoError, Workspace } from "./core.ts";
 
-const VERSION = "0.1.0";
+const VERSION = "0.1.1";
 const v = (s: string) => Number.parseInt(s.replace(/^v/i, ""), 10);
 const USAGE = `echoctl ${VERSION} (typescript): local change journal for agent files
 
@@ -27,8 +27,8 @@ function lineDiff(a: string[], b: string[], max: number): string[] {
   const out: string[] = []; let i = 0, j = 0;
   while ((i < n || j < m) && out.length < max) {
     if (i < n && j < m && a[i] === b[j]) { i++; j++; }
-    else if (j < m && (i >= n || dp[i][j + 1] >= dp[i + 1][j])) out.push("+" + b[j++]);
-    else out.push("-" + a[i++]);
+    else if (i < n && (j >= m || dp[i + 1][j] >= dp[i][j + 1])) out.push("  - " + a[i++]);
+    else out.push("  + " + b[j++]);
   }
   return out;
 }
@@ -74,7 +74,7 @@ function main(argv: string[]): number {
         const rows: { path: string; change: string }[] = []; const text: string[] = [];
         for (const x of paths) {
           const fa = A.get(x), fb = B.get(x); if (fa && fb && fa.sha256 === fb.sha256) continue;
-          const change = !fa ? "added" : !fb ? "removed" : "modified"; rows.push({ path: x, change }); text.push(`${change.padEnd(8)} ${x}`);
+          const change = !fa ? "added" : !fb ? "removed" : "modified"; rows.push({ path: x, change }); if (text.length) text.push(""); text.push(`${change.padEnd(8)} ${x}`);
           if (o.path || o.content) text.push(...lineDiff(fa ? ws.getObject(fa.sha256).toString("utf8").split("\n") : [], fb ? ws.getObject(fb.sha256).toString("utf8").split("\n") : [], 200));
         }
         say(rows, text.join("\n") || "No differences."); return 0;

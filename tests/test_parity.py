@@ -63,6 +63,24 @@ class Parity(unittest.TestCase):
         self.assertEqual(files, {"AGENTS.md", "MEMORY.md", "skills/x/SKILL.md"})
         for rt in (PY, TS):
             run(rt, self.ws, "restore", "v1", "--to", str(self.ws), ok=(2,))
+            run(rt, self.ws, "restore", "v1", "--to", str(self.ws / "restored"), ok=(2,))
+            self.assertFalse((self.ws / "restored").exists())
+
+    def test_more_secret_formats_skipped(self):
+        samples = {
+            "STRIPE.md": "sk_live_" + "A1b2" * 6,
+            "GHPAT.md": "github_pat_" + "a1B2_" * 10,
+            "GOOGLE.md": "AIza" + "b" * 35,
+            "JWT.md": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N",
+        }
+        for name, val in samples.items():
+            (self.ws / name).write_text(f"key {val}\n")
+        for rt in (PY, TS):
+            with self.subTest(rt=rt[0]):
+                shutil.rmtree(self.ws / ".echo", ignore_errors=True)
+                run(rt, self.ws, "init", ".")
+                files = {f["path"] for f in json.loads(run(rt, self.ws, "receipt").stdout)["files"]}
+                self.assertEqual(files, {"AGENTS.md", "MEMORY.md", "skills/x/SKILL.md"})
 
     def test_index_stays_within_budget(self):
         run(PY, self.ws, "init", ".")

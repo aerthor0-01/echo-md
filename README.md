@@ -26,14 +26,15 @@ Python 3.11+ (no dependencies):
 
 ```bash
 git clone https://github.com/aerthor0-01/echo-md && cd echo-md
-pip install ./python
+pipx install ./python                  # or: python3 -m venv .venv && .venv/bin/pip install ./python
 cd ~/my-agent && echoctl init --adapter generic   # or --adapter hermes
 ```
 
 Node 22.18+ (no dependencies):
 
 ```bash
-node typescript/src/cli.ts init ~/my-agent
+alias echoctl="node $PWD/typescript/src/cli.ts"   # add to ~/.bashrc or ~/.zshrc
+cd ~/my-agent && echoctl init
 ```
 
 Then:
@@ -45,7 +46,7 @@ echoctl history --limit 10
 echoctl diff v3 v4 --path AGENTS.md
 echoctl show v3 MEMORY.md
 echoctl verify v4                 # exit code 1 if any stored byte fails its hash
-echoctl restore v3 --to ./restored
+echoctl restore v3 --to ../restored
 echoctl receipt v4 > receipt.json # JSON receipt with the manifest digest
 ```
 
